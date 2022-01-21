@@ -28,7 +28,11 @@ Map::Map(const char* mapPath, SDL_Renderer* renderer, uint8_t level) : renderer(
 		/* Creez obiectele ce trebuie amplasate pe harta*/
 		this->objects = nullptr;
 		uint8_t lvl[12][16] = { 0 };
-		Utilities::Load_Levels(lvl, level);
+		if (Utilities::Load_Levels(lvl, level))
+		{
+			std::cout << "\nERROR: Eroare la incarcarea hartii!\n";
+			exit(EXIT_FAILURE);
+		}
 		loadMap(lvl);
 
 		std::cout << "\nMAP DATA: Map(" << mapPath << ");";
@@ -374,7 +378,6 @@ bool Map::GetFinish(Player* player)
 				//std::cout << "\nColiziune" << i * 50 - auxY << '\n';
 				colission = true;
 				map[i][j] = 0;
-				PlaySound(TEXT("data/sound/final.wav"), NULL, SND_ASYNC);
 			}
 		}
 	}
@@ -408,3 +411,12 @@ bool Map::onGround(Player *player)
 	return colission;
 }
 
+bool Map::GetOut(Player* player)
+{
+	SDL_Rect srcR = player->getSource();
+	if (srcR.y >= 550)
+	{
+		return true;
+	}
+	return false;
+}

@@ -64,7 +64,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height, bo
 
 void Game::changeState(int old_state, int new_state)
 {
-	if (old_state == 0 || old_state == 3 || old_state == 4)
+	if (old_state == 0 || old_state == 3 || old_state == 4 || old_state == 5)
 	{
 		if (HomeScreen) delete HomeScreen;
 		HomeScreen = nullptr;
@@ -194,7 +194,14 @@ void Game::changeState(int old_state, int new_state)
 	}
 	else if (new_state == 4)
 	{
+		PlaySound(TEXT("data/sound/final.wav"), NULL, SND_ASYNC);
 		HomeScreen = new PlaceObject("data/png/BG/BG_end.png", renderer);
+		HomeScreen->init(0, 0, 800, 600);
+	}
+	else if (new_state == 5)
+	{
+		PlaySound(TEXT("data/sound/lost.wav"), NULL, SND_ASYNC);
+		HomeScreen = new PlaceObject("data/png/BG/BG_lost.png", renderer);
 		HomeScreen->init(0, 0, 800, 600);
 	}
 }
@@ -283,7 +290,7 @@ void Game::handleEvents()
 			stare = 0;
 		}
 	}
-	else if (stare == 4)
+	else if (stare == 4 || stare == 5)
 	{
 		if (state[SDL_SCANCODE_RETURN])
 		{
@@ -297,16 +304,19 @@ void Game::update()
 {
 	if (stare == 1)
 	{
+		/* Daca tasta a fost apasata, actualieaza direct pozitia player-ului */
 		if (this->Key())
 		{
 			player->update_position();
 			this->setActKey(false);
 		}
+		/* Daca tasta nu a fost apasata, lasa player-ul afectat de gravitatie, apoi actualizeaza pozitia*/
 		else
 		{
 			map->Collision(player, 'S');
 			player->update_position();
 		}
+		/* Daca player-ul castige puncte */
 		if (map->GetPoints(player))
 		{
 			if (points) delete points;
@@ -320,9 +330,17 @@ void Game::update()
 			points = new PlaceObject(nume, renderer);
 			points->init(100, 0, 50, 50);
 		}
-		if (map->GetFinish(player))
+		/* Altfel, s-ar putea sa paraseasca harta */
+		else if (map->GetOut(player))
 		{
-			if (game_data.level < 3)
+			game_data.level = 1;
+			changeState(stare, 5);
+			stare = 5;
+		}
+		/* Altfel, s-ar putea sa ajunga la destinatie*/
+		else if (map->GetFinish(player))
+		{
+			if (game_data.level < 5)
 			{
 				game_data.level++;
 				changeState(stare, 1);
@@ -335,16 +353,19 @@ void Game::update()
 				stare = 4;
 			}
 		}
+		
 	}
 }
 
 void Game::render()
 {
 	SDL_RenderClear(renderer);
-	if (stare == 0 || stare == 3 || stare == 4)
+	/* Afisez doar background */
+	if (stare == 0 || stare == 3 || stare == 4 || stare == 5)
 	{
 		HomeScreen->draw();
 	}
+	/* Afisez harta si jucatorul */
 	else if (stare == 1)
 	{
 		map->draw();
@@ -352,6 +373,7 @@ void Game::render()
 		score->draw();
 		points->draw();
 	}
+	/* Afisez background si detalii joc */
 	else if (stare == 2)
 	{
 		HomeScreen->draw();

@@ -65,7 +65,7 @@ int Utilities::Load_Levels(uint8_t test[12][16], uint8_t level)
 
 	rf.close();
 	if (!rf.good()) {
-		std::cout << "\nERROR: Error occurred at reading time!";
+		throw "ERROR: Error occurred at reading time!";
 		return 1;
 	}
 	return 0;
@@ -100,6 +100,7 @@ int Utilities::Save_Game_Data(game_stats gdata)
 		std::cout << "\nERROR: Error occurred at writing time!";
 		return 1;
 	}
+	return 0;
 }
 
 uint32_t Utilities::getDigits(uint32_t number)

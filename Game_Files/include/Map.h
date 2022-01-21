@@ -27,4 +27,5 @@ public:
 	bool GetPoints(Player* player);
 	bool GetFinish(Player* player);
 	bool onGround(Player* player);
+	bool GetOut(Player* player);
 };
